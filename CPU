@@ -1,0 +1,132 @@
+import time
+def base(line):
+	if '0x' in line:
+		line = int(line, 16)
+	elif '0b' in line:
+		line = int(line, 2)
+	else:
+		line = int(line)
+	return line
+def hexCode(value, size = 4):
+	return hex(value).replace("0x", "").zfill(size)
+
+class Instruction:
+	def __init__(self, value: int, CPU):
+		code = hexCode(value)
+		self.class_instruction = int(code[0], 16)
+		source_destination = bin(int(code[1], 16)).replace("0b", "").zfill(4)
+		self.source = int(source_destination[0:2], 2)
+		self.destination = int(source_destination[2:4], 2)
+		self.data = int(code[2:], 16)
+		self.CPU = CPU
+		
+		# print(f"{self.class_instruction=}, {self.source=}, {self.destination=}, {self.data=}, {value=}, {code=}, {source_destination=}")
+		
+	def execute(self):
+		match self.class_instruction:
+			case 0:
+				if self.source == 1:
+					value = input()
+					if value == "":
+						value = 0xff
+					if value[0] == '"':
+						value = ord(value[1])
+					self.CPU.registers[self.destination].data = base(value)
+				elif self.source == 2:
+					print(f"{self.CPU.registers[self.destination].data}", end = "")
+				elif self.source == 3:
+					print(chr(self.CPU.registers[self.destination].data), end="")
+			case 1:
+				self.CPU.registers[self.destination].data = self.data
+			case 2:
+				self.CPU.registers[self.destination].data = self.CPU.RAM[self.data]
+			case 3:
+				self.CPU.RAM[self.data] = self.CPU.registers[self.source].data
+			case 4:
+				self.CPU.registers[self.destination].data = self.CPU.registers[self.source].data
+			case 5:
+				self.CPU.registers[3].data += self.CPU.registers[self.source].data
+			case 6:
+				self.CPU.registers[3].data -= self.CPU.registers[self.source].data
+			case 7:
+				self.CPU.registers[3].data = -self.CPU.registers[3].data
+			case 8:
+				self.CPU.registers[3].data = ~(self.CPU.registers[self.source].data & self.CPU.registers[3].data)
+			case 9:
+				self.CPU.registers[self.destination].data = self.CPU.RAM[self.CPU.registers[self.source].data]
+			case 10:
+				self.CPU.RAM[self.CPU.registers[self.source].data] = self.CPU.registers[self.destination].data
+			case 11:
+				self.CPU.registers[self.destination].data = (self.CPU.registers[self.source] << hexCode(self.data, 2)[0]) >> hexCode(self.data, 2)[1]
+			case 12:
+				if self.CPU.registers[self.source].data < 0:
+					self.CPU.PC = self.CPU.registers[self.destination].data - 1
+			case 13:
+				if self.CPU.registers[self.source].data == 0:
+					self.CPU.PC = self.CPU.registers[self.destination].data - 1
+			case 14:
+				if self.CPU.registers[self.source].data > 0:
+					self.CPU.PC = self.CPU.registers[self.destination].data - 1
+			case 15:
+				self.CPU.running = False
+class Register:
+	def __init__(self, name: str):
+		self.name = name
+		self.data = 0
+class CPU:
+	def __init__(self, RAM: list, RAM_SIZE: int):
+		self.running = True
+		self.RAM = RAM
+		self.PC = 0
+		self.registers = [
+			Register("A"),
+			Register("B"),
+			Register("C"),
+			Register("Acc")
+		]
+		
+		for i in range(RAM_SIZE-len(self.RAM)):
+			self.RAM.append(0)
+		
+		while self.running and self.PC < len(self.RAM):
+			Instruction(self.RAM[self.PC], self).execute()
+			self.PC += 1
+			'''
+			time.sleep(0.5)
+			print(f"{self.PC-1}) ")
+			for register in self.registers:
+				print(f"{register.name}: {hexCode(register.data, 2)}")
+		
+		for register in self.registers:
+			print(f"{register.name}: {hexCode(register.data, 2)}")
+		print(f"RAM: {self.RAM}")
+		
+		print(f"Fibbonachi Answer: {self.registers[1].data}")
+		'''
+def readFile(RAM, fileName):
+	with open(fileName, 'r') as file:
+		lineNumber = 0
+		for line in file:
+			line = line.strip()
+			if '#' in line:
+				comment = line.find('#')
+				line = line[0:comment]
+			line = line.replace(' ', '')
+			if line[0:2] == '0x':
+			   	line = line.replace('0x', '')
+			if line[len(line)-1] == ',':
+				line = line.replace(',', '')
+			if line == "":
+				continue
+			RAM.append(int(line, 16))
+
+def loadFile(RAM):
+	fileName = input("Enter the name of the file that you would like to execute (Without extension - it is a .bin file): ")
+	fileName += ".bin"
+	readFile(RAM, fileName)
+
+if __name__ == "__main__":
+	RAM = []
+	RAM_SIZE = 512
+	loadFile(RAM)
+	CPU(RAM, RAM_SIZE)
