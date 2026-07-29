@@ -121,7 +121,8 @@ def readFile(RAM, fileName):
 			RAM.append(int(line, 16))
 
 def loadFile(RAM):
-	fileName = input("Enter the name of the file that you would like to execute (Without extension - it is a .bin file): ")
+	fileName = 'Binary/'
+	fileName += input("Enter the name of the file that you would like to execute (Without extension - it is a .bin file): ")
 	fileName += ".bin"
 	readFile(RAM, fileName)
 

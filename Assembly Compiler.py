@@ -123,17 +123,16 @@ def decodeLine(line, character, binaryFile, lineNum, labels):
 	elif line == "stop":
 		line = 0xFFFFFF
 	return hex(int(line))
-def readWriteFile(fileName):
-	binaryFileName = fileName.replace('.asm', '.bin')
-	with open(binaryFileName, 'w') as file:
-		file.write('')
-	binaryFile = open(binaryFileName, 'a')
+def readWriteFile(fileName, filePath):
+	binaryFileName = 'Binary/'
+	binaryFileName += fileName.replace('.asm', '.bin')
+	binaryFile = open(binaryFileName, 'w')
 	labels = {}
-	writeFile(fileName, binaryFile, 0, labels)
+	writeFile(fileName, filePath, binaryFile, 0, labels)
 	binaryFile.close()
 	print("Program complied...")
-def writeFile(fileName, binaryFile, lineNum, labels):
-	with open(fileName, 'r') as file:
+def writeFile(fileName, filePath, binaryFile, lineNum, labels):
+	with open(f"{filePath}/{fileName}", 'r') as file:
 		for line in file:
 			character = None
 			if '"' in line:
@@ -173,7 +172,7 @@ def writeFile(fileName, binaryFile, lineNum, labels):
 def loadFile():
 	fileName = input("Enter the name of the file that you would like to compile (Without extension - it is a .asm file): ")
 	fileName += ".asm"
-	readWriteFile(fileName)
+	readWriteFile(fileName, 'Programs/')
 
 if __name__ == "__main__":
 	loadFile()
