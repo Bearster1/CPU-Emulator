@@ -2,4 +2,4 @@ Acc = C
 C = 1
 Sub C
 C = Acc
-A = RAM[C]
+B = RAM[C]

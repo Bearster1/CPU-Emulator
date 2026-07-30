@@ -114,7 +114,7 @@ def decodeLine(line, character, binaryFile, lineNum, labels):
 		line = 0x0C00 + destination * 0x100
 	elif 'macro' == line[0:5]:
 		line = f"{line[5:]}.asm"
-		writeFile(line, binaryFile, lineNum, labels)
+		writeFile(line, 'Programs/', binaryFile, lineNum, labels)
 		return None
 	elif 'label' == line[0:5]:
 		line = line[5:]
