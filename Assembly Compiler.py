@@ -53,10 +53,10 @@ def decodeLine(line, character, binaryFile, lineNum, labels, lines):
 					source = registers.index(source)
 					line = 0x9000 + (destination + source*0b100) * 0x100
 			elif source[:5] == 'label':
-				print(line)
+				# print(line)
 				return line
 			else:
-				print(')×&;£', line, source)
+				# print(')×&;£', line, source)
 				if '>>' in line:
 					source = source.split('>>')
 					data = source[1]
@@ -122,7 +122,8 @@ def decodeLine(line, character, binaryFile, lineNum, labels, lines):
 	elif 'label' == line[0:5]:
 		line = line[5:]
 		labels[line] = lineNum
-		return "label"
+		line = 0
+		return line
 	elif line == "stop":
 		line = 0xFFFFFF
 	return hex(int(line))
@@ -171,7 +172,7 @@ def writeFile(fileName, filePath, binaryFile, lineNum, labels, lines):
 			
 			lineNum += 1
 			
-			if binaryLine == None or binaryLine == "label":
+			if binaryLine == None:
 				continue
 			lines.append(f"{binaryLine}")
 	return lines
