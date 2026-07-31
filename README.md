@@ -7,6 +7,8 @@ Key Notes:
         You can also replace it with a letter encased in " and it will be replaced with it's ascii value.
             If you do "\n" it will be replaced with a new line.
         You can also replace it with a label name - see [NAME].
+            To do this you do [VALUE_COMMAND] Label [NAME]
+    When it says [VALUE_COMMAND] that refers to any command that has a [VALUE] input
     When it says [FILE_NAME] you replace that with the file name the macro refers to.
     When it says [NAME] you replace that with the name of the label.
     All commands are case-insensitive.
