@@ -12,7 +12,7 @@ def base(line):
 	return line
 def hexCode(value, size = 4):
 	return hex(value).replace("0x", "").zfill(size)
-def decodeLine(line, character, binaryFile, lineNum, labels):
+def decodeLine(line, character, binaryFile, lineNum, labels, lines):
 	registers = ["a", "b", "c", "acc"]
 	line = line.lower()
 	if 'data' == line[:4]:
@@ -52,8 +52,11 @@ def decodeLine(line, character, binaryFile, lineNum, labels):
 				except Exception as e:
 					source = registers.index(source)
 					line = 0x9000 + (destination + source*0b100) * 0x100
+			elif source[:5] == 'label':
+				print(line)
+				return line
 			else:
-				# print(')×&;£', line)
+				print(')×&;£', line, source)
 				if '>>' in line:
 					source = source.split('>>')
 					data = source[1]
@@ -114,7 +117,7 @@ def decodeLine(line, character, binaryFile, lineNum, labels):
 		line = 0x0C00 + destination * 0x100
 	elif 'macro' == line[0:5]:
 		line = f"{line[5:]}.asm"
-		writeFile(line, 'Programs/', binaryFile, lineNum, labels)
+		lines = writeFile(line, 'Programs/', binaryFile, lineNum, labels, lines)
 		return None
 	elif 'label' == line[0:5]:
 		line = line[5:]
@@ -126,12 +129,24 @@ def decodeLine(line, character, binaryFile, lineNum, labels):
 def readWriteFile(fileName, filePath):
 	binaryFileName = 'Binary/'
 	binaryFileName += fileName.replace('.asm', '.bin')
-	binaryFile = open(binaryFileName, 'w')
+	with open(f"{filePath}/{fileName}", 'r'): # Stops it from making new files when they aren't needed.
+		binaryFile = open(binaryFileName, 'w')
 	labels = {}
-	writeFile(fileName, filePath, binaryFile, 0, labels)
+	lines = []
+	lines = writeFile(fileName, filePath, binaryFile, 0, labels, lines)
+	i = 0
+	for line in lines:
+		i += 1
+		if "label" in line and line[0:5] != "label":
+			line = line.split("label")
+			line = line[0]+str(labels[line[1].lower()])
+			line = decodeLine(line, None, binaryFile, None, labels, lines)
+		if i != len(lines):
+			line += '\n'
+		binaryFile.write(line)
 	binaryFile.close()
 	print("Program complied...")
-def writeFile(fileName, filePath, binaryFile, lineNum, labels):
+def writeFile(fileName, filePath, binaryFile, lineNum, labels, lines):
 	with open(f"{filePath}/{fileName}", 'r') as file:
 		for line in file:
 			character = None
@@ -144,9 +159,6 @@ def writeFile(fileName, filePath, binaryFile, lineNum, labels):
 				line = line.replace(f'"{letter}"', str(character))
 				# print(line)
 			
-			newLine = ''
-			if '\n' in line:
-				newLine = '\n'
 			line = line.replace(' ', '').replace('\n', '')
 			if '#' in line:
 				comment = line.find('#')
@@ -154,21 +166,15 @@ def writeFile(fileName, filePath, binaryFile, lineNum, labels):
 			if line == '':
 				continue
 				
-			if "label" in line and line[0:5] != "label":
-				line = line.split("label")
-				line = line[0]+str(labels[line[1].lower()])
-				
-			binaryLine = decodeLine(line, character, binaryFile, lineNum, labels)
+			binaryLine = decodeLine(line, character, binaryFile, lineNum, labels, lines)
 			# print(binaryLine)
 			
 			lineNum += 1
 			
-			if binaryLine == None:
-				binaryFile.write(newLine)
+			if binaryLine == None or binaryLine == "label":
 				continue
-			elif binaryLine == "label":
-				continue
-			binaryFile.write(f"{binaryLine}{newLine}")
+			lines.append(f"{binaryLine}")
+	return lines
 def loadFile():
 	fileName = input("Enter the name of the file that you would like to compile (Without extension - it is a .asm file): ")
 	fileName += ".asm"

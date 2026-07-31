@@ -11,6 +11,7 @@ Key Notes:
     When it says [NAME] you replace that with the name of the label.
     All commands are case-insensitive.
     When there is a tab in this file it likely means it is an extention of the thing under it.
+    To do a comment use a # and everything after will be a comment.
 
 The Commands:
     0: Data [VALUE]
@@ -40,4 +41,3 @@ The Commands:
         This outputs the letter from the ascii code in the register
     19: Macro [FILE_NAME]
     20: Label [NAME]
-        Currently this command must be executed before the label is called.
